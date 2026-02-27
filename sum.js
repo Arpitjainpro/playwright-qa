@@ -1,33 +1,28 @@
-const { chromium } = require("playwright");
+const { chromium } = require('playwright');
 
 (async () => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true
+  });
+
   const page = await browser.newPage();
 
-  const seeds = [31,32,33,34,35,36,37,38,39,40];
   let grandTotal = 0;
 
-  for (let seed of seeds) {
-    const url = `https://qa-playground.vercel.app/seed/${seed}`;
-    await page.goto(url, { waitUntil: "networkidle" });
+  for (let seed = 31; seed <= 40; seed++) {
+    const url = `https://YOUR-SEED-LINK-HERE/${seed}`;
+    await page.goto(url);
 
-    // Get full page text
-    const text = await page.locator("body").innerText();
+    const numbers = await page.$$eval("table td", tds =>
+      tds.map(td => parseInt(td.innerText)).filter(n => !isNaN(n))
+    );
 
-    // Extract all numbers from page
-    const numbers = text
-      .match(/\d+(\.\d+)?/g)
-      ?.map(Number) || [];
-
-    const pageSum = numbers.reduce((a,b)=>a+b,0);
-
-    console.log(`Seed ${seed} sum:`, pageSum);
-    grandTotal += pageSum;
+    const sum = numbers.reduce((a, b) => a + b, 0);
+    console.log(`Seed ${seed} sum: ${sum}`);
+    grandTotal += sum;
   }
 
-  console.log("=================================");
   console.log("FINAL TOTAL:", grandTotal);
-  console.log("=================================");
 
   await browser.close();
 })();
